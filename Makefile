@@ -4,7 +4,7 @@
 #
 #compilateur
 CC = gcc
-#compil en mode 'debug' ou optmisee (-O2)
+#compil en mode 'debug' ou optmisée (-O2)
 DBG = no
 
 ifeq ($(DBG),yes) #en mode debug
@@ -19,32 +19,34 @@ lib =   $(libG2X)
 src = src/
 # fichiers *.h locaux et lib.
 inc = -I./include $(incG2X) 
+# fichiers générés
+bin = bin/
 
-# regle de compilation generique des objets
-%.o : $(src)%.c
+# règle de compilation générique des objets
+$(bin)%.o : $(src)%.c
 	@echo "module $@"
 	@$(CC) $(CFLAGS) $(inc) -c $< -o $@
 	
-# regle de compilation generique
-% : %.o 
+# règle de compilation générique
+% : $(bin)%.o 
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 	
-SimpleOsc : PMat.o Link.o SimpleOsc.o	
+SimpleOsc : $(bin)PMat.o $(bin)Link.o $(bin)SimpleOsc.o	
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
-Corde1 : PMat.o Link.o Corde1.o	
+Corde1 : $(bin)Mat.o $(bin)Link.o $(bin)Corde1.o	
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
-Corde2 : PMat.o Link.o Corde2.o	
+Corde2 : $(bin)PMat.o $(bin)Link.o $(bin)Corde2.o	
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
 .PHONY : clean cleanall
 
 clean : 
-	rm -f *.o .tmp*
+	rm -f $(bin)*.o .tmp*
 cleanall : 
-	rm -f *.o .tmp* $(EXEC)
+	rm -f $(bin)*.o .tmp* $(EXEC)
