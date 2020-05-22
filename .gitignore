@@ -1,3 +1,4 @@
 *.o
-SimpleOsc
-bin/
+G2X/SimpleOsc
+G2X/bin/
+OpenGL/cmake-build-debug
