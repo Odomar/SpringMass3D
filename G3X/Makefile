@@ -8,9 +8,9 @@ CC = gcc
 DBG = no
 
 ifeq ($(DBG),yes) #en mode debug
-  CFLAGS = -g -Wpointer-arith -Wall -ansi
+  CFLAGS = -g -Wpointer-arith -Wall
 else              #en mode normal
-  CFLAGS = -O2 -ansi
+  CFLAGS = -O2
 endif
 
 # assemblage des infos de lib. et inc.

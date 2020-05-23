@@ -35,11 +35,11 @@ static Link    *TabL=NULL;
 void reset()
 { 
   int i;
-  for (i=0;i<nbm;i++) TabM[i].pos=TabM[i].vit=TabM[i].frc=0.;
+  for (i=0;i<nbm;i++) TabM[i].z=TabM[i].vit=TabM[i].frc=0.;
   switch (PouF)
   {
     case 'P' : case 'p' : /* contrainte initiale : particule deplacee */
-      TabM[1].pos=1.;
+      TabM[1].z=1.;
       break;
     case 'F' : case 'f' : /* Autre forme de contrainte initiale : impulsion de force */
       TabM[1].frc=1.*SQR(Fe); /* notez le calibrage par Fe^2 */
@@ -116,7 +116,7 @@ void dessin(void)
   /* frequence d'affichage reglable */
   g3x_SetRefreshFreq(Fa);
   Link *L=TabL;
-  while (L<TabL+nbl)  { L->draw(L); L->k=k; L->z=z; ++L; } /* mise a jour des parametres => scrollbar */
+  while (L<TabL+nbl)  { L->draw(L); L->k=k; L->v=z; ++L; } /* mise a jour des parametres => scrollbar */
 }
 
 

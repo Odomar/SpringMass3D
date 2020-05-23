@@ -31,11 +31,11 @@ static Link     L;
 /*=================================================================*/
 void reset(void)
 {	
-  M.pos=M.vit=M.frc=0.;
+  M.z=M.vit=M.frc=0.;
   switch (PouF)
   {
     case 'P' : case 'p' : /* contrainte initiale : particule deplacee */
-      M.pos=.5;
+      M.z=.5;
       break;
     case 'F' : case 'f' : /* Autre forme de contrainte initiale : impulsion de force */
       M.frc=1.*SQR(Fe);   /* notez le calibrage par Fe^2 */

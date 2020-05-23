@@ -24,67 +24,32 @@ static double shin = 0.5;
 static void AlgoFrcConst(Link* L)
 {
   PMat* M=(L->M1?L->M1:L->M2);
-  M->frc += L->frc;
-}
-
-/*! Algo. ressort de Hook (lineaire)                            !*/
-/* produit une force : F=k*(d-l0).AB                             */
-/* ou (d-l0) est l'allongement et AB le vecteur inter particules */
-static void AlgoRessort(Link* L)
-{
-  double d = L->M2->pos-L->M1->pos;
-  double f = L->k*(d-L->l);
-  L->M1->frc += f;
-  L->M2->frc -= f;
-}
-  
-/*! Algo. frein cinetique                           !*/
-/* produit une force : F=z*(V2-V1)                   */
-/* ou (V2-V1) est la vitesse relative des particules */
-static void AlgoFrein(Link* L)
-{
-  double f = L->z*(L->M2->vit-L->M1->vit);
-  L->M1->frc += f;
-  L->M2->frc -= f;
+  M->frc_x += L->frc_x;
+  M->frc_y += L->frc_y;
+  M->frc_z += L->frc_z;
 }
 
 /*! Algo. ressort+frein         !*/
 /*combine les 2 algos precedents */
 static void AlgoRessortFrein(Link* L)
-{ 
-  double d = L->M2->pos-L->M1->pos;
-  double f = L->k*(d-L->l)+L->z*(L->M2->vit-L->M1->vit);
-  L->M1->frc += f;
-  L->M2->frc -= f;
-}  
+{
+	double d = L->M2->x-L->M1->x;
+	double f = L->k*(d-L->l)+L->v*(L->M2->vit_x-L->M1->vit_x);
+	printf("x: %f %f\n", d, f);
+	L->M1->frc_x += f;
+	L->M2->frc_x -= f;
 
-/*! Algo. butee visco-elastique                    !*/
-/*! active uniquement si dist. < seuil             !*/
-/* comme precedemment mais avec un seuil d'activite */
-static void AlgoRF_Butee(Link* L)
-{ 
-  double d = L->M2->pos-L->M1->pos;
-  if (d>L->s) return;
+	d = L->M2->y-L->M1->y;
+	f = L->k*(d-L->l)+L->v*(L->M2->vit_y-L->M1->vit_y);
+	printf("y: %f %f\n", d, f);
+	L->M1->frc_y += f;
+	L->M2->frc_y -= f;
 
-  double f = L->k*(d-L->l)+L->z*(L->M2->vit-L->M1->vit);
-  L->M1->frc += f;
-  L->M2->frc -= f;
-}  
-
-
-/*! Algo. lien visco-elastique "cassable"          !*/
-/*! si d>seuil, la liaison devient inactive        !*/
-static void AlgoRF_CondPos(Link* L)
-{ /* si la liaison est deja cassee : rien */
-  if (!L->on_off) return;
-
-  double d = L->M2->pos-L->M1->pos;
-  /* si l'allongement est trop fort : la liaison casse */
-  if (d>L->s) { L->on_off=0; return; }
-
-  double f = L->k*(d-L->l)+L->z*(L->M2->vit-L->M1->vit);
-  L->M1->frc += f;
-  L->M2->frc -= f;
+	d = L->M2->z-L->M1->z;
+	f = L->k*(d-L->l)+L->v*(L->M2->vit_z-L->M1->vit_z);
+	printf("z: %f %f\n", d, f);
+	L->M1->frc_z += f;
+	L->M2->frc_z -= f;
 }
 
 /* quelques couleurs (cf. <g3x_Colors.h>) */
@@ -94,8 +59,8 @@ static void DrawM1M2(Link* L)
 {
 	g3x_Material(Lcols[L->type],ambi,diff,spec,shin,1.);
 	glBegin(GL_LINES);
-	glVertex3f(L->M1->x,L->M1->y,L->M1->pos);
-	glVertex3f(L->M2->x,L->M2->y,L->M2->pos);
+	glVertex3f(L->M1->x,L->M1->y,L->M1->z);
+	glVertex3f(L->M2->x,L->M2->y,L->M2->z);
 	glEnd();
 }
 
@@ -105,8 +70,8 @@ static void DrawFrc(Link* L)
 	PMat* M=(L->M1!=NULL?L->M1:L->M2);
 	g3x_Material(Lcols[L->type],ambi,diff,spec,shin,1.);
 	glBegin(GL_LINES);
-	glVertex3f(M->x,M->y,M->pos);
-	glVertex3f(M->x,M->y,M->pos+0.001*L->frc);
+	glVertex3f(M->x,M->y,M->z);
+	glVertex3f(M->x+0.001*L->frc_x,M->y+0.001*L->frc_y,M->z+0.001*L->frc_z);
 	glEnd();
 }
 
@@ -115,13 +80,15 @@ static void DrawFrc(Link* L)
 /*================================================*/
 
 /*! Creation d'un module Force Constante (exp. Gravite) !*/
-extern void FrcConst(Link* L, double force_const)
+extern void FrcConst(Link* L, double fc_x, double fc_y, double fc_z)
 {
   L->type   = _FRC_CONST;
   /* parametres pour le moteur physique */
-  L->frc    = force_const;
+  L->frc_x  = fc_x;
+  L->frc_y  = fc_y;
+  L->frc_z  = fc_z;
   L->k      = 0.;
-  L->z      = 0.;
+  L->v      = 0.;
   L->s      = 0.;
   L->l      = 0.;
   L->on_off = true;
@@ -130,42 +97,13 @@ extern void FrcConst(Link* L, double force_const)
   L->draw   = &DrawFrc;
 }
 
-/*! Creation d'un ressort lineaire (de Hook) !*/
-extern void Ressort(Link* L, double k)
-{
-  L->type   = _RESSORT;
-  /* parametres pour le moteur physique */
-  L->k      = k ;
-  L->z      = 0.;
-  L->s      = 0.;
-  L->l      = 0.;
-  L->on_off = true;
-  L->setup  = &AlgoRessort;
-  /* parametres graphiques              */
-  L->draw   = &DrawM1M2;
-}
-  
-/*! Creation d'un frein cinetique lineaire !*/
-extern void Frein(Link* L, double z)
-{
-  L->type   = _FREIN;
-  /* parametres pour le moteur physique */
-  L->k      = 0.;
-  L->z      = z ;
-  L->s      = 0.;
-  L->on_off = true;
-  L->setup  = &AlgoFrein;
-  /* parametres graphiques              */
-  L->draw   = &DrawM1M2;
-}
-
 /*! Creation d'un ressort+frein !*/
 extern void RessortFrein(Link* L, double k, double z)
 {
   L->type   = _RESSORT_FREIN;
   /* parametres pour le moteur physique */
   L->k      = k ;
-  L->z      = z ;
+  L->v      = z ;
   L->s      = 0.;
   L->l      = 0.;
   L->on_off = true;
@@ -173,38 +111,6 @@ extern void RessortFrein(Link* L, double k, double z)
   /* parametres graphiques              */
   L->draw   = &DrawM1M2;
 }
-
-/*! Creation d'une butee visco-elastique seuillee !*/
-extern void RF_Butee(Link *L, double k, double z, double s)
-{
-  L->type   = _RF_BUTEE;
-  /* parametres pour le moteur physique */
-  L->k      = k ;
-  L->z      = z ;
-  L->s      = s ; /* seuil de distance pour detachement   */
-  L->l      = 0.;
-  L->on_off = true;
-  L->setup  = &AlgoRF_Butee;
-  /* parametres graphiques              */
-  L->draw   = &DrawM1M2;
-}
-
-
-/*! Creation d'une liaison de rupture avec condition sur l'elongation !*/
-extern void RF_CondPos(Link *L, double k, double z, double s)
-{
-  L->type   = _CONDIT_RF;
-  /* parametres pour le moteur physique */
-  L->k      = k ;
-  L->z      = z ;
-  L->s      = s ; /* seuil d'elongation pour rupture      */
-  L->l      = 0.;
-  L->on_off = true;
-  L->setup  = &AlgoRF_CondPos;
-  /* parametres graphiques              */
-  L->draw   = &DrawM1M2;
-}
-
 
 /*! Connexion d'une Liaison entre 2 points Mat !*/
 /* pas utilise dans systemes de particules       */
@@ -214,5 +120,6 @@ extern void Connect(PMat *M1, Link *L, PMat *M2)
   L->M1=M1;
   L->M2=M2;
   if (M1==NULL || M2==NULL) return;
-  L->l = (M2->pos-M1->pos);
+  /* length is enclidean distance */
+  L->l = sqrt((M2->x-M1->x) * (M2->x-M1->x) + (M2->y-M1->y) * (M2->y-M1->y) + (M2->z-M1->z) * (M2->z-M1->z));
 }

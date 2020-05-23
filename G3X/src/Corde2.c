@@ -33,7 +33,7 @@ static Link    *TabL=NULL;
 void reset(void)
 {	
   int i;
-  for (i=0;i<nbm;i++) TabM[i].pos=TabM[i].vit=TabM[i].frc=0.;
+  for (i=0;i<nbm;i++) TabM[i].z=TabM[i].vit=TabM[i].frc=0.;
 }
 
 
@@ -117,7 +117,7 @@ void dessin(void)
 	/* frequence d'affichage reglable */
 	g3x_SetRefreshFreq(Fa);
   Link *L=TabL;  
-  while (L<TabL+nbl)  { L->draw(L); L->k=k; L->z=z; ++L; } /* mise a jour des parametres => scrollbar */
+  while (L<TabL+nbl)  { L->draw(L); L->k=k; L->v=z; ++L; } /* mise a jour des parametres => scrollbar */
 }
 
 

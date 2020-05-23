@@ -30,9 +30,11 @@
     /*------------------------------------------------------*/
     double    k;      /* raideur pour les ressorts          */
     double    l;      /* longueur a vide pour les ressorts  */
-    double    z;      /* viscosite pour les freins          */
+    double    v;      /* viscosite pour les freins          */
     double    s;      /* seuil pour les liens conditionnels */ 
-    double    frc;    /* force a distribuer sur M1 et M2    */
+    double    frc_x;  /* force a distribuer sur M1 et M2    */
+    double    frc_y;  /* force a distribuer sur M1 et M2    */
+    double    frc_z;  /* force a distribuer sur M1 et M2    */
     PMat     *M1,*M2; /* les 2 PMat de branchement          */
     bool      on_off;                /* flag d'activite     */
     void    (*setup)(struct _link*); /* l'algo de calcul    */
@@ -43,7 +45,7 @@
 
 /* les  constructeurs */
 /*! Creation d'un module Force Constante (exp. Gravite)                                  !*/
-  void FrcConst(Link* L, double frc);
+  void FrcConst(Link* L, double fc_x, double fc_y, double fc_z);
 
 /*! Creation d'un ressort lineaire (de Hook)                                             !*/
   void Ressort(Link* L, double k);

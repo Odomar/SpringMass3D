@@ -11,24 +11,45 @@
 /*! integration : leapfrog                                !*/
 static void leapfrog(PMat* M, double h)
 {	
-  M->vit += h*M->frc/M->m;   /* 1e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */ 
-  M->pos += h*M->vit;        /* 2e integration : position  X(n+1)=X(n)+h*V(n+1) - IMplicite */
-  M->frc  = 0.;              /* on vide le buffer de force */ 
+	M->vit_x += h*M->frc_x/M->m;   /* 1e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */
+	M->x += h*M->vit_x;        /* 2e integration : position  X(n+1)=X(n)+h*V(n+1) - IMplicite */
+	M->frc_x = 0.;              /* on vide le buffer de force */
+
+	M->vit_y += h*M->frc_y/M->m;   /* 1e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */
+	M->y += h*M->vit_y;        /* 2e integration : position  X(n+1)=X(n)+h*V(n+1) - IMplicite */
+	M->frc_y = 0.;              /* on vide le buffer de force */
+
+	M->vit_z += h*M->frc_z/M->m;   /* 1e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */
+	M->z += h*M->vit_z;        /* 2e integration : position  X(n+1)=X(n)+h*V(n+1) - IMplicite */
+	M->frc_z = 0.;              /* on vide le buffer de force */
 }
 /*! integration : Euler Explicite                         !*/
 static void eulerexp(PMat* M, double h)
 {	
-  M->pos += h*M->vit;        /* 1e integration : position  X(n+1)=X(n)+h*V(n)   - EXplicite */
-  M->vit += h*M->frc/M->m;   /* 2e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */ 
-  M->frc  = 0.;              /* on vide le buffer de force */ 
+	M->x += h*M->vit_x;        /* 1e integration : position  X(n+1)=X(n)+h*V(n)   - EXplicite */
+	M->vit_x += h*M->frc_x/M->m;   /* 2e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */
+	M->frc_x = 0.;              /* on vide le buffer de force */
+
+	M->y += h*M->vit_y;        /* 1e integration : position  X(n+1)=X(n)+h*V(n)   - EXplicite */
+	M->vit_y += h*M->frc_y/M->m;   /* 2e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */
+	M->frc_y = 0.;              /* on vide le buffer de force */
+
+	M->z += h*M->vit_z;        /* 1e integration : position  X(n+1)=X(n)+h*V(n)   - EXplicite */
+	M->vit_z += h*M->frc_z/M->m;   /* 2e integration : vitesse   V(n+1)=V(n)+h*F(n)/m - EXplicite */
+	M->frc_z = 0.;              /* on vide le buffer de force */
 }
 
 /*! Algorithme du point fixe (position constante)         !*/
 static void pointfixe(PMat* M, double h)
-{ /* ne fait rien, a part vider le buffer de force       */
-  M->frc = 0.; 
-  /* ne sert que si on veut "figer" une particule mobile */
-  M->vit = 0.; 
+{
+	M->frc_x = 0.;
+	M->vit_x = 0.;
+
+	M->frc_y = 0.;
+	M->vit_y = 0.;
+
+	M->frc_z = 0.;
+	M->vit_z = 0.;
 }
 
 static void drawcirc(PMat *M)
@@ -48,50 +69,64 @@ static void drawdot(PMat *M)
 /*! Creation d'une masse libre !*/
 /*  Creation d'une particule libre : attribution des parametres de position et masse (vitesse nulle)  */
 /*  avec l'integrateur LeapFrog */
-extern void MassLF(PMat* M, double pos, double x, double m)
+extern void MassLF(PMat* M, double x, double y, double z, double m)
 {
-  M->type  = _PARTICULE;
-  /* parametres pour le moteur physique */
-  M->pos   = pos;
-  M->vit   = 0.;
-  M->frc   = 0.;
-  M->m     = m;
-  M->setup = &leapfrog;
-  /* parametres graphiques */
-  M->x    = x;
-  memcpy(M->col,G3Xb ,sizeof(G3Xcolor));
-  M->draw  = &drawdot;
+	M->type  = _PARTICULE;
+	/* parametres pour le moteur physique */
+	M->x   = x;
+	M->y   = y;
+	M->z   = z;
+	M->vit_x   = 0.;
+	M->vit_y   = 0.;
+	M->vit_z   = 0.;
+	M->frc_x   = 0.;
+	M->frc_y   = 0.;
+	M->frc_z   = 0.;
+	M->m     = m;
+	M->setup = &leapfrog;
+	/* parametres graphiques */
+	memcpy(M->col,G3Xb ,sizeof(G3Xcolor));
+	M->draw  = &drawdot;
 }
 
 /* variante, avec l'integrateur Euler Explicite */
-extern void MassEE(PMat* M, double pos, double x, double m)
+extern void MassEE(PMat* M, double x, double y, double z, double m)
 {
-  M->type  = _PARTICULE;
-  /* parametres pour le moteur physique */
-  M->pos   = pos;
-  M->vit   = 0.;
-  M->frc   = 0.;
-  M->m     = m;
-  M->setup = &eulerexp;
-  /* parametres graphiques */
-  M->x    = x;
-  memcpy(M->col,G3Xg ,sizeof(G3Xcolor));
-  M->draw  = &drawcirc;
+	M->type  = _PARTICULE;
+	/* parametres pour le moteur physique */
+	M->x   = x;
+	M->y   = y;
+	M->z   = z;
+	M->vit_x   = 0.;
+	M->vit_y   = 0.;
+	M->vit_z   = 0.;
+	M->frc_x   = 0.;
+	M->frc_y   = 0.;
+	M->frc_z   = 0.;
+	M->m     = m;
+	M->setup = &eulerexp;
+	/* parametres graphiques */
+	memcpy(M->col,G3Xg ,sizeof(G3Xcolor));
+	M->draw  = &drawcirc;
 }
 
 /*! Creation d'une masse fixe !*/
-extern void Fixe(PMat *M, double pos, double x)
+extern void Fixe(PMat *M, double x, double y, double z)
 {
-  M->type  = _POINTFIXE;
-  /* parametres pour le moteur physique */
-  M->pos  = pos;
-  M->vit  = 0.;
-  M->frc  = 0.;
-  M->m    = 1.; /* juste pour le dessin */ 
-  M->setup = &pointfixe;
-  /* parametres graphiques */
-  M->x    = x;
-  memcpy(M->col,G3Xr ,sizeof(G3Xcolor));
-  M->draw  = &drawcirc;
+	M->type  = _POINTFIXE;
+	M->x   = x;
+	M->y   = y;
+	M->z   = z;
+	M->vit_x   = 0.;
+	M->vit_y   = 0.;
+	M->vit_z   = 0.;
+	M->frc_x   = 0.;
+	M->frc_y   = 0.;
+	M->frc_z   = 0.;
+	M->m    = 1.; /* juste pour le dessin */
+	M->setup = &pointfixe;
+	/* parametres graphiques */
+	memcpy(M->col,G3Xr ,sizeof(G3Xcolor));
+	M->draw  = &drawcirc;
 }
 

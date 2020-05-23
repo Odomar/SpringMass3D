@@ -26,7 +26,17 @@ static Link    *TabL=NULL;
 void reset(void)
 {
 	int i;
-	for (i=0;i<nbm;i++) TabM[i].pos=TabM[i].vit=TabM[i].frc=0.;
+	for (i=0;i<nbm;i++) {
+		TabM[i].vit_x = 0.;
+		TabM[i].vit_y = 0.;
+		TabM[i].vit_z = 0.;
+		TabM[i].x = 0.;
+		TabM[i].y = -5.+i;
+		TabM[i].z = 0.;
+		TabM[i].frc_x = 0.;
+		TabM[i].frc_y = 0.;
+		TabM[i].frc_z = 0.;
+	}
 }
 
 
@@ -36,9 +46,9 @@ void reset(void)
 bool Modeleur(void)
 {
 	/*! le Modele : un tableau de particules, un tableau de liaisons !*/
-	nbm = 11;              /* 10 particules et 1 point fixe     */
+	nbm = 11;              /* 9 particules et 2 points fixes     */
 	if (!(TabM=(PMat*)calloc(nbm,sizeof(PMat)))) return false;
-	nbl = (nbm-1)+(nbm-1); /* 10 ressorts-freins + 10 "gravites"  */
+	nbl = (nbm-1)+(nbm-2); /* 10 ressorts-freins + 9 "gravites"  */
 	if (!(TabL=(Link*)calloc(nbl,sizeof(Link)))) return false;
 
 	Fe= 100;           /* parametre du simulateur Fe=1/h                  */
@@ -53,13 +63,14 @@ bool Modeleur(void)
 	/*! les particules !*/
 	int i;
 	PMat* M=TabM;
-	Fixe(M++,0.,-5.);
-	for (i=1;i<nbm;i++) MassLF(M++,0.,-5.+i,m);
+	Fixe(M++,0.,-5.,0.);
+	for (i=1;i<nbm-1;i++) MassLF(M++,0.,-5.+i,0.,m);
+	Fixe(M++,0.,5.,0.);
 
 	/*! les liaisons !*/
 	Link* L=TabL;
 	for (i=0;i<nbm-1;i++) RessortFrein(L++,k,z);
-	for (i=0;i<nbm-1;i++) FrcConst    (L++,g  );
+	for (i=0;i<nbm-2;i++) FrcConst    (L++,0.,0.,g);
 
 	/*! les connections => topologie fixe !*/
 	L=TabL;
@@ -109,7 +120,7 @@ void dessin(void)
 	/* frequence d'affichage reglable */
 	g3x_SetRefreshFreq(Fa);
 	Link *L=TabL;
-	while (L<TabL+nbl)  { L->draw(L); L->k=k; L->z=z; ++L; } /* mise a jour des parametres => scrollbar */
+	while (L<TabL+nbl)  { L->draw(L); L->k=k; L->v=z; ++L; } /* mise a jour des parametres => scrollbar */
 }
 
 

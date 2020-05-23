@@ -17,24 +17,28 @@
     int    type;     /* type pour usages divers            */     
     /*-----------------------------------------------------*/           
     double m;        /* parametre de masse                 */
-    double pos;      /* position courante                  */
-    double vit;      /* vitesse  courante                  */
-    double frc;      /* buffer de force                    */
+	double x;        /* position courante                  */
+	double y;        /* position courante                  */
+	double z;        /* position courante                  */
+    double vit_x;    /* vitesse  courante                  */
+    double vit_y;    /* vitesse  courante                  */
+    double vit_z;    /* vitesse  courante                  */
+    double frc_x;    /* buffer de force                    */
+    double frc_y;    /* buffer de force                    */
+    double frc_z;    /* buffer de force                    */
     void (*setup)(struct _pmat*, double h); /* integrateur */
     /*-----------------------------------------------------*/
     G3Xcolor col;   /* couleur RGBA (4 float)              */
-    double   x;     /* 2e coord. pour positionnement 2D    */
-    double   y;     /* 3e coord. pour positionnement 3D    */
     void (*draw)(struct _pmat*);     /* fonction de dessin */
   } PMat;
   
 /*! Creation d'une particule mobile !*/
   /* avec l'integrateur LeapFrog */
-  void MassLF(PMat* M, double pos, double x, double m);
+  void MassLF(PMat* M, double x, double y, double z, double m);
   /* variante, avec l'integrateur Euler Explicite */
-  void MassEE(PMat* M, double pos, double x, double m);
+  void MassEE(PMat* M, double x, double y, double z, double m);
 
 /*! Creation d'une masse fixe !*/
-  void Fixe(PMat *M, double pos, double x);
+  void Fixe(PMat *M, double x, double y, double z);
 
 #endif
