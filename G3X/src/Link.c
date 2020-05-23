@@ -35,19 +35,16 @@ static void AlgoRessortFrein(Link* L)
 {
 	double d = L->M2->x-L->M1->x;
 	double f = L->k*(d-L->l)+L->v*(L->M2->vit_x-L->M1->vit_x);
-	printf("x: %f %f\n", d, f);
 	L->M1->frc_x += f;
 	L->M2->frc_x -= f;
 
 	d = L->M2->y-L->M1->y;
 	f = L->k*(d-L->l)+L->v*(L->M2->vit_y-L->M1->vit_y);
-	printf("y: %f %f\n", d, f);
 	L->M1->frc_y += f;
 	L->M2->frc_y -= f;
 
 	d = L->M2->z-L->M1->z;
 	f = L->k*(d-L->l)+L->v*(L->M2->vit_z-L->M1->vit_z);
-	printf("z: %f %f\n", d, f);
 	L->M1->frc_z += f;
 	L->M2->frc_z -= f;
 }

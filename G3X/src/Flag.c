@@ -11,7 +11,7 @@ static double   xmin=-6.,ymin=-6.,xmax=+6.,ymax=+6.;
 static int      Fe;        /* frequence d'echantillonnage        */
 static double   h;         /* pas d'echantillonnage 1./Fech      */
 static int      Fa=1;      /* on affiche 1 echantillon sur Faff  */
-static double   m,k,z,g;   /* parametres physiques               */
+static double   m,k,z,g,v; /* parametres physiques               */
 static double   tempo=0.02;/* temporisation de la simul          */
 
 /*! systeme "Masses-Ressorts" : les particules et les liaisons !*/
@@ -48,7 +48,7 @@ bool Modeleur(void)
 	/*! le Modele : un tableau de particules, un tableau de liaisons !*/
 	nbm = 11;              /* 9 particules et 2 points fixes     */
 	if (!(TabM=(PMat*)calloc(nbm,sizeof(PMat)))) return false;
-	nbl = (nbm-1)+(nbm-2); /* 10 ressorts-freins + 9 "gravites"  */
+	nbl = (nbm-1)+(nbm-2)+(nbm-2); /* 10 ressorts-freins + 9 "gravites" + 9 "vents"  */
 	if (!(TabL=(Link*)calloc(nbl,sizeof(Link)))) return false;
 
 	Fe= 100;           /* parametre du simulateur Fe=1/h                  */
@@ -58,6 +58,7 @@ bool Modeleur(void)
 	k = 0.866*SQR(Fe); /* raideurs   -> a multiplier par mb*Fe^2          */
 	z = 0.08*Fe;       /* viscosires -> a multiplier par mb*Fe            */
 	g = -5.*Fe;        /* la gravite : elle aussi a calibrer avec Fe      */
+	v = -2.*Fe;        /* le vent : lui aussi a calibrer avec Fe          */
 
 
 	/*! les particules !*/
@@ -71,6 +72,7 @@ bool Modeleur(void)
 	Link* L=TabL;
 	for (i=0;i<nbm-1;i++) RessortFrein(L++,k,z);
 	for (i=0;i<nbm-2;i++) FrcConst    (L++,0.,0.,g);
+	for (i=0;i<nbm-2;i++) FrcConst    (L++,v,0.,0.);
 
 	/*! les connections => topologie fixe !*/
 	L=TabL;
@@ -83,6 +85,14 @@ bool Modeleur(void)
 		L++;
 	}
 	/* les "gravites" individuelles  */
+	M=TabM+1; /* 1e particule mobile */
+	while (L<TabL+nbm-1+nbm-2)
+	{
+		Connect(M,L,NULL);
+		M++;
+		L++;
+	}
+	/* le vent  */
 	M=TabM+1; /* 1e particule mobile */
 	while (L<TabL+nbl)
 	{
