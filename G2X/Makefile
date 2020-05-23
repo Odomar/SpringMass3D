@@ -31,6 +31,8 @@ $(bin)%.o : $(src)%.c
 % : $(bin)%.o 
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
+
+all: SimpleOsc Corde1 Corde2
 	
 SimpleOsc : $(bin)PMat.o $(bin)Link.o $(bin)SimpleOsc.o	
 	@echo "edition de lien $^ -> $@"
