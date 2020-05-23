@@ -32,7 +32,7 @@ $(bin)%.o : $(src)%.c
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
-all: SimpleOsc Corde1 Corde2
+all: Flag
 	
 SimpleOsc : $(bin)PMat.o $(bin)Link.o $(bin)SimpleOsc.o	
 	@echo "edition de lien $^ -> $@"
@@ -43,6 +43,10 @@ Corde1 : $(bin)PMat.o $(bin)Link.o $(bin)Corde1.o
 	@$(CC) $^ $(lib) -o $@
 
 Corde2 : $(bin)PMat.o $(bin)Link.o $(bin)Corde2.o	
+	@echo "edition de lien $^ -> $@"
+	@$(CC) $^ $(lib) -o $@
+
+Flag : $(bin)PMat.o $(bin)Link.o $(bin)Flag.o
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
