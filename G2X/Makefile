@@ -36,7 +36,7 @@ SimpleOsc : $(bin)PMat.o $(bin)Link.o $(bin)SimpleOsc.o
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
-Corde1 : $(bin)Mat.o $(bin)Link.o $(bin)Corde1.o	
+Corde1 : $(bin)PMat.o $(bin)Link.o $(bin)Corde1.o	
 	@echo "edition de lien $^ -> $@"
 	@$(CC) $^ $(lib) -o $@
 
