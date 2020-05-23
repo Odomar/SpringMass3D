@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <g2x.h>
+#include <g3x.h>
 
 /* pixel window dimensions          */
 uint   pixwidth=1400,pixheight=700;
@@ -19,12 +19,12 @@ double xmin=-5.,ymin=-5.,xmax=+205.,ymax=+105.;
 /* 'Physical' parameters                                                       */
 double m,za,kc,zc,r;
 /* initial position and speed */
-G2Xpoint  P0;
-G2Xvector V0;
+G3Xpoint  P0;
+G3Xvector V0;
 /* current positions Euler, Implicit, Leapfrog */
-G2Xpoint  Pe,Pi,Pl;
+G3Xpoint  Pe,Pi,Pl;
 /* speed, acceleration  Euler, Implicit, Leapfrog, gravity */
-G2Xvector Ve,Vi,Vl,Ae,Ai,Al,G;
+G3Xvector Ve,Vi,Vl,Ae,Ai,Al,G;
 
 /* analytic & simulation time step */
 double dt,h;
@@ -50,41 +50,41 @@ void reset(void)
 /*=================================================================*/
 void Init(void)
 {
-  G =(G2Xvector){  0.,-10.}; /* gravity force                    */
+  G =(G3Xvector){  0.,-10.}; /* gravity force                    */
   m = 1.0;  /* ball mass                                         */
   za= 0.01; /* air friction (elementary kinetic damping)         */
   kc= 0.9;  /* collision treatment : inverse kinetics            */        
   zc= 0.9;  /*                                                   */
   r = 2.0;  /* ball ray                                          */
-  P0=(G2Xpoint) {  0., 25.};   /* initial position and speed     */
-  V0=(G2Xvector){ 10., 40.};
+  P0=(G3Xpoint) {  0., 25.};   /* initial position and speed     */
+  V0=(G3Xvector){ 10., 40.};
   dt=0.05;     /* analytic   time step */
   h =0.05;     /* simulation time step */
   reset();
 
   /* scrollbars and buttons */
-	g2x_CreateScrollv_d("za",&za,0.,0.1,1.,"za");
-	g2x_CreateScrollh_d("dt",&dt,0.001,0.1,1.,"dt");
-	g2x_CreateScrollh_d(" h",&h ,0.001,0.1,1.,"h");
-	g2x_CreatePopUp("reset",reset,"reset");
-	g2x_CreateSwitch("EE",&FLAG_EXPLICIT_EULER,"affiche/masque Euler Explicit");
-	g2x_CreateSwitch("IE",&FLAG_IMPLICIT_EULER,"affiche/masque Euler Implicit");
-	g2x_CreateSwitch("LF",&FLAG_LEAPFROG      ,"affiche/masque LeapFrog      ");
+	g3x_CreateScrollv_d("za",&za,0.,0.1,1.,"za");
+	g3x_CreateScrollh_d("dt",&dt,0.001,0.1,1.,"dt");
+	g3x_CreateScrollh_d(" h",&h ,0.001,0.1,1.,"h");
+	g3x_CreatePopUp("reset",reset,"reset");
+	g3x_CreateSwitch("EE",&FLAG_EXPLICIT_EULER,"affiche/masque Euler Explicit");
+	g3x_CreateSwitch("IE",&FLAG_IMPLICIT_EULER,"affiche/masque Euler Implicit");
+	g3x_CreateSwitch("LF",&FLAG_LEAPFROG      ,"affiche/masque LeapFrog      ");
 }
 
 /*======================================================================*/
 /*= Computes an draws analytic solution for initial conditions (p0,vO) =*/
 /*======================================================================*/
-void Analytic(G2Xpoint* pi, G2Xvector* vi)
+void Analytic(G3Xpoint* pi, G3Xvector* vi)
 {
-	G2Xpoint  p,q;	
-  G2Xvector v;
+	G3Xpoint  p,q;
+  G3Xvector v;
 	double    t = 0;
   double    e,w=m/za;
 	
   q=*pi;  
 	/* two sets of "continuous time" formulation : with or without "air friction" */
-  switch (G2Xzero(za)) /* G2Xzero(x) <=> (fabs(x)<EPSILON?true:false) */
+  switch (G3Xzero(za)) /* G3Xzero(x) <=> (fabs(x)<EPSILON?true:false) */
   {
     case true : /* without "air" friction */
       do
@@ -94,8 +94,8 @@ void Analytic(G2Xpoint* pi, G2Xvector* vi)
 			  p.x = pi->x + vi->x*t + 0.5*G.x*t*t;
 			  p.y = pi->y + vi->y*t + 0.5*G.y*t*t;		
         /* draw                   */
-        g2x_Line(q.x,q.y,p.x,p.y,G2Xwa,1);
-        g2x_Plot(p.x,p.y,G2Xwb,3);
+        g3x_Line(q.x,q.y,p.x,p.y,G3Xwa,1);
+        g3x_Plot(p.x,p.y,G3Xwb,3);
         q=p;
       } while (p.y>r);
       /* setup collision speed    */
@@ -111,8 +111,8 @@ void Analytic(G2Xpoint* pi, G2Xvector* vi)
 			  p.x = pi->x + (G.x*w)*t + w*(vi->x - G.x*w)*(1.-e);		
 			  p.y = pi->y + (G.y*w)*t + w*(vi->y - G.y*w)*(1.-e);		
         /* draw                   */
-        g2x_Line(q.x,q.y,p.x,p.y,G2Xwa,1);
-        g2x_Plot(p.x,p.y,G2Xwb,3);
+        g3x_Line(q.x,q.y,p.x,p.y,G3Xwa,1);
+        g3x_Plot(p.x,p.y,G3Xwb,3);
         q=p;
       } while (p.y>r);
       /* setup collision speed    */
@@ -131,14 +131,14 @@ void Analytic(G2Xpoint* pi, G2Xvector* vi)
 /*=================================================================*/
 void Background(void)
 {
-	G2Xpoint  p=P0;	
-	G2Xvector v=V0;		
-	g2x_Axes();
+	G3Xpoint  p=P0;
+	G3Xvector v=V0;
+	g3x_Axes();
   do
   {
     Analytic(&p,&v);
   }
-  while (!G2Xzero(v.x) && p.x<xmax);
+  while (!G3Xzero(v.x) && p.x<xmax);
 }
 
 
@@ -217,7 +217,7 @@ void Anim(void)
 	/* the ball leaves the window, back to initial conditions */
 	if (Pe.y<=0.   || Pi.y<=0.   || Pl.y<=0. || 
 	    Pe.x>=xmax || Pi.x>=xmax || Pl.x>=xmax) reset();
-  else g2x_tempo(0.1*h);
+  else g3x_tempo(0.1*h);
 }
 
 /*===========================================================================*/
@@ -226,14 +226,14 @@ void Anim(void)
 void Draw(void)
 {
 	Background(); /* call the background image */
-	if (FLAG_EXPLICIT_EULER) { g2x_Circle(Pe.x,Pe.y,r,G2Xb ,3); /* Explicit Euler */ 
-                             g2x_StaticPrint(50,pixheight-20,G2Xb,'l',"Explicit");
+	if (FLAG_EXPLICIT_EULER) { g3x_Circle(Pe.x,Pe.y,r,G3Xb ,3); /* Explicit Euler */
+                             g3x_StaticPrint(50,pixheight-20,G3Xb,'l',"Explicit");
                            } 
-  if (FLAG_IMPLICIT_EULER) { g2x_Circle(Pi.x,Pi.y,r,G2Xg ,3); /* Imlicit Euler  */
-	                           g2x_StaticPrint(50,pixheight-30,G2Xg,'l',"Implicit");
+  if (FLAG_IMPLICIT_EULER) { g3x_Circle(Pi.x,Pi.y,r,G3Xg ,3); /* Imlicit Euler  */
+	                           g3x_StaticPrint(50,pixheight-30,G3Xg,'l',"Implicit");
                            }
-	if (FLAG_LEAPFROG)       { g2x_Circle(Pl.x,Pl.y,r,G2Xr ,3); /* Leapfrog       */
-	                           g2x_StaticPrint(50,pixheight-40,G2Xr,'l',"LeapFrog");
+	if (FLAG_LEAPFROG)       { g3x_Circle(Pl.x,Pl.y,r,G3Xr ,3); /* Leapfrog       */
+	                           g3x_StaticPrint(50,pixheight-40,G3Xr,'l',"LeapFrog");
                            }
 }
 
@@ -251,14 +251,14 @@ void Quit(void)
 int main(int argc, char* argv[])
 {	  
   /* window statement */
-  g2x_InitWindow("Balistic",pixwidth,pixheight);
-  g2x_SetWindowCoord(xmin,ymin,xmax,ymax);
+  g3x_InitWindow("Balistic",pixwidth,pixheight);
+  g3x_SetWindowCoord(xmin,ymin,xmax,ymax);
   /* dialog functions */
-  g2x_SetInitFunction(Init);
-	g2x_SetDrawFunction(Draw);  
-	g2x_SetAnimFunction(Anim);  
-  g2x_SetExitFunction(Quit);
+  g3x_SetInitFunction(Init);
+	g3x_SetDrawFunction(Draw);
+	g3x_SetAnimFunction(Anim);
+  g3x_SetExitFunction(Quit);
 
   /* simulation loop -- passed to glutMainLoop() */
-  return g2x_MainStart();
+  return g3x_MainStart();
 }

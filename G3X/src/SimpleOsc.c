@@ -5,7 +5,7 @@
 /*= Modele 0 : juste une masse, un point fixe et un ressort   =*/
 /*= Rupture d'equilibre par impulsion de force ou deplacement =*/  
 /*=============================================================*/
-#include <g2x.h>
+#include <g3x.h>
 
 #include <PMat.h>
 #include <Link.h>
@@ -48,23 +48,23 @@ void reset(void)
 /*=-------------------------=*/
 void Modeleur(void)
 {
-  Fe= 100;           /* parametre du simulateur Fe=1/h                  */ 
-  h = 1./Fe;
-  m = 1.;            /* la plupart du temps, toutes les masses sont a 1 */
-  k = 0.10*SQR(Fe);  /* raideurs   -> a multiplier par mb*Fe^2                   */
-  z = 0.005*Fe;      /* viscosires -> a multiplier par mb*Fe                     */
+	Fe= 100;           /* parametre du simulateur Fe=1/h                  */
+	h = 1./Fe;
+	m = 1.;            /* la plupart du temps, toutes les masses sont a 1 */
+	k = 0.10*SQR(Fe);  /* raideurs   -> a multiplier par mb*Fe^2                   */
+	z = 0.005*Fe;      /* viscosires -> a multiplier par mb*Fe                     */
 
-  /*! les objets : une masse mobile (M) reliee a un pt. fixe (S) par un ressort-frein (L) !*/
-  Fixe(&S,0.,-2.);
-  MassLF(&M,0.,+2.,m); 
-/* la meme chose, mais avec l'integrateur Euler Explicite */
-/*  MassEE(&M,0.,+2.,m); */
-  
-  RessortFrein(&L,k,z);
-  /* connection du ressort entre les 2 masses */
-  Connect(&M,&L,&S);
-  
-  reset();
+	/*! les objets : une masse mobile (M) reliee a un pt. fixe (S) par un ressort-frein (L) !*/
+	Fixe(&S,0.,-2.);
+	MassLF(&M,0.,+2.,m);
+	/* la meme chose, mais avec l'integrateur Euler Explicite */
+	/*  MassEE(&M,0.,+2.,m); */
+
+	RessortFrein(&L,k,z);
+	/* connection du ressort entre les 2 masses */
+	Connect(&M,&L,&S);
+
+	reset();
 }
 
 /*=------------------------------=*/
@@ -72,15 +72,15 @@ void Modeleur(void)
 /*=------------------------------=*/
 void init(void)
 {
-  /* construction du modele   */
+	/* construction du modele   */
 	Modeleur();
-  
-  /* les parametres reglables */
-  g2x_CreateScrollv_i("Fa",&Fa,1,20,1,"Fa");
-  g2x_CreateScrollv_d("tmp",&tempo,0.,.1,1.,"tempo");
-	g2x_CreateScrollh_d("k",&k,k*0.01,k*5.,1,"k");
-	g2x_CreateScrollh_d("z",&z,z*0.01,z*5.,1,"z");
-	g2x_CreatePopUp("reset",reset,"reset");
+
+	/* les parametres reglables */
+	g3x_CreateScrollv_i("Fa",&Fa,1,20,1,"Fa");
+	g3x_CreateScrollv_d("tmp",&tempo,0.,.1,1.,"tempo");
+	g3x_CreateScrollh_d("k",&k,k*0.01,k*5.,1,"k");
+	g3x_CreateScrollh_d("z",&z,z*0.01,z*5.,1,"z");
+	g3x_CreatePopUp("reset",reset,"reset");
 }
 
 
@@ -89,11 +89,9 @@ void init(void)
 /*=------------------------------=*/
 void dessin(void)
 { /* frequence d'affichage reglable */
-	g2x_SetRefreshFreq(Fa);
-  S.draw(&S);
-  M.draw(&M);
-  L.draw(&L);
-  L.k=k; L.z=z; /* mise a jour des parametres => scrollbar */
+	g3x_SetRefreshFreq(Fa);
+	L.draw(&L);
+	L.k=k; L.z=z; /* mise a jour des parametres => scrollbar */
 }
 
 
@@ -108,7 +106,7 @@ void Moteur_Physique(void)
   /* ensuite les Link */
   L.setup(&L); 
 
-  g2x_tempo(tempo); /* temporisation, si ca va trop vite */
+  g3x_tempo(tempo); /* temporisation, si ca va trop vite */
 }
 
 
@@ -126,13 +124,28 @@ void quit(void)
 /*=-------------------------=*/
 int main(int argc, char* argv[])
 {
-  g2x_InitWindow(*argv,pixwidth,pixheight);  
-  g2x_SetWindowCoord(xmin,ymin,xmax,ymax);
+	g3x_InitWindow(*argv,pixwidth,pixheight);
+	/* paramètres caméra */
+	/* param. géométrique de la caméra. cf. gluLookAt(...) */
+	g3x_SetPerspective(40.f, 100.f, 1.f);
+	/* zPosition, orientation de la caméra */
+	g3x_SetCameraSpheric(0.25 * PI, +0.25 * PI, 6., (G3Xpoint){0., 0., 0.});
 
-  g2x_SetInitFunction(init);
-  g2x_SetAnimFunction(Moteur_Physique);
-  g2x_SetDrawFunction(dessin);          
-  g2x_SetExitFunction(quit);      
+	/* fixe les param. colorimétriques du spot lumineux */
+	/* lumiere blanche (c'est les valeurs par defaut)   */
+	g3x_SetLightAmbient(1.f, 1.f, 1.f);
+	g3x_SetLightDiffuse(1.f, 1.f, 1.f);
+	g3x_SetLightSpecular(1.f, 1.f, 1.f);
 
-  return g2x_MainStart();
+	/* fixe la zPosition et la direction du spot lumineux */
+	/* (c'est les valeurs par defaut)                    */
+	g3x_SetLightPosition(10.f, 10.f, 10.f);
+	/*g3x_SetLightDirection(0.f, 0.f, 0.f);*/
+
+	g3x_SetInitFunction(init);
+	g3x_SetAnimFunction(Moteur_Physique);
+	g3x_SetDrawFunction(dessin);
+	g3x_SetExitFunction(quit);
+
+  return g3x_MainStart();
 }

@@ -12,7 +12,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <g2x.h>
+#include <g3x.h>
 
 #define EXPLICIT 0
 #define IMPLICIT 1
@@ -23,7 +23,7 @@ typedef struct
 	double    A,B;
 	double    x,r;
 	double    f;
-	G2Xcolor  col;
+	G3Xcolor  col;
 	bool      on;
 	bool      OSC,DIV;
 	char      name[64];
@@ -82,14 +82,14 @@ void setup_LF(void)
 
 void drawmeth(method M)
 {
-	g2x_Print(xmin+0.01*xmax,ymin+M.y,M.col ,'l',M.name);	
+	g3x_Print(xmin+0.01*xmax,ymin+M.y,M.col ,'l',M.name);
 	if (M.DIV) 
 	{
-		g2x_Print(xmin+0.05*xmax,ymin+M.y,M.col ,'l',"A=%lf B=%lf -> DIV",M.A,M.B);	
+		g3x_Print(xmin+0.05*xmax,ymin+M.y,M.col ,'l',"A=%lf B=%lf -> DIV",M.A,M.B);
 		return;
 	}
-	if (M.OSC) g2x_Print(xmin+0.05*xmax,ymin+M.y,M.col ,'l',"A=%lf B=%lf -> f=%lf",M.A,M.B,M.f);	
-	else       g2x_Print(xmin+0.05*xmax,ymin+M.y,M.col ,'l',"A=%lf B=%lf         ",M.A,M.B);	
+	if (M.OSC) g3x_Print(xmin+0.05*xmax,ymin+M.y,M.col ,'l',"A=%lf B=%lf -> f=%lf",M.A,M.B,M.f);
+	else       g3x_Print(xmin+0.05*xmax,ymin+M.y,M.col ,'l',"A=%lf B=%lf         ",M.A,M.B);
 	
 	double y,x,r,t;
 	M.x=x0;
@@ -101,7 +101,7 @@ void drawmeth(method M)
 		M.r= y;
 		x  = (M.x>0.)?MIN(M.x*yamp,0.999*ymax):MAX(M.x*yamp,0.999*ymin);
 		r  = (M.r>0.)?MIN(M.r*yamp,0.999*ymax):MAX(M.r*yamp,0.999*ymin);
-		g2x_Line(t-u,r,t,x,M.col,2);
+		g3x_Line(t-u,r,t,x,M.col,2);
 	}	
 }
 
@@ -155,7 +155,7 @@ void draw_analytic(void)
 	{
 		r=x;
 		x=(*sol)(t*xamp);
-		g2x_Line(t-u,r,t,x,G2Xwb ,1);
+		g3x_Line(t-u,r,t,x,G2Xwb ,1);
 	}	
 }
 
@@ -178,13 +178,13 @@ void dessin(void)
 	if (EI.on) drawmeth(EI);
 	if (LF.on) drawmeth(LF);
 
-	g2x_Print(xmin+0.07*xmax,ymax-0.1,G2Xk ,'l'," h=%lf   ",h );
-	g2x_Print(xmin+0.01*xmax,ymax-0.2,G2Xk ,'l'," k=%.4lf ",k );
-	g2x_Print(xmin+0.07*xmax,ymax-0.2,G2Xk ,'l'," K=%.4lf ",K );
-	g2x_Print(xmin+0.01*xmax,ymax-0.3,G2Xk ,'l'," z=%.4lf ",z ); 
-	g2x_Print(xmin+0.07*xmax,ymax-0.3,G2Xk ,'l'," Z=%.4lf ",Z ); 
+	g3x_Print(xmin+0.07*xmax,ymax-0.1,G2Xk ,'l'," h=%lf   ",h );
+	g3x_Print(xmin+0.01*xmax,ymax-0.2,G2Xk ,'l'," k=%.4lf ",k );
+	g3x_Print(xmin+0.07*xmax,ymax-0.2,G2Xk ,'l'," K=%.4lf ",K );
+	g3x_Print(xmin+0.01*xmax,ymax-0.3,G2Xk ,'l'," z=%.4lf ",z );
+	g3x_Print(xmin+0.07*xmax,ymax-0.3,G2Xk ,'l'," Z=%.4lf ",Z );
 	
-	if (fc>0.) g2x_Print(xmin+0.01*xmax,ymax-0.1,G2Xyc ,'l',"fc=%lf",fc/(2.*PI));
+	if (fc>0.) g3x_Print(xmin+0.01*xmax,ymax-0.1,G2Xyc ,'l',"fc=%lf",fc/(2.*PI));
 
 }
 
@@ -207,17 +207,17 @@ void init(void)
 	sprintf(LF.name,"Leapfrog   "); LF.y=0.3; memcpy(LF.col,G2Xr  ,sizeof(G2Xcolor));
 
 	/* les scrollbars : 3 horiz. / 2 vertic. */
-	g2x_CreateScrollh_i("Fe"  ,&FECH, 1   ,1000  , 1.0,"sampling rate  ");	
-	g2x_CreateScrollh_d("k"   ,&k   , 0.  , 1.e+4, 1.0,"spring stiffness");
-	g2x_CreateScrollh_d("z"   ,&z   , 0.  , 1.e+1, 1.0,"damper viscosity");
-	g2x_CreateScrollv_d("xmax",&xamp, 0.05, 50.  , 1.0,"xmax");
-	g2x_CreateScrollv_d("yamp",&yamp, 0.01, 1.0  , 1.0,"yamp");
+	g3x_CreateScrollh_i("Fe"  ,&FECH, 1   ,1000  , 1.0,"sampling rate  ");
+	g3x_CreateScrollh_d("k"   ,&k   , 0.  , 1.e+4, 1.0,"spring stiffness");
+	g3x_CreateScrollh_d("z"   ,&z   , 0.  , 1.e+1, 1.0,"damper viscosity");
+	g3x_CreateScrollv_d("xmax",&xamp, 0.05, 50.  , 1.0,"xmax");
+	g3x_CreateScrollv_d("yamp",&yamp, 0.01, 1.0  , 1.0,"yamp");
 
   /* les boutons switch */
-	g2x_CreateSwitch("SA",&SA   ,"Sol. Analytique");
-	g2x_CreateSwitch("EE",&EE.on,"Euler Explicite");
-  g2x_CreateSwitch("EI",&EI.on,"Euler Implicite");
-  g2x_CreateSwitch("LF",&LF.on,"Leapfrog       ");
+	g3x_CreateSwitch("SA",&SA   ,"Sol. Analytique");
+	g3x_CreateSwitch("EE",&EE.on,"Euler Explicite");
+  g3x_CreateSwitch("EI",&EI.on,"Euler Implicite");
+  g3x_CreateSwitch("LF",&LF.on,"Leapfrog       ");
 
 }
 
@@ -227,11 +227,11 @@ void init(void)
 int main(int argc, char* argv[])
 { 
 	/* Parametres de la fenetre graphique */
-  g2x_InitWindow(*argv,pixwidth,pixheight);
-  g2x_SetWindowCoord(xmin,ymin,xmax,ymax);
+  g3x_InitWindow(*argv,pixwidth,pixheight);
+  g3x_SetWindowCoord(xmin,ymin,xmax,ymax);
 
-	g2x_SetInitFunction(init);
-	g2x_SetDrawFunction(dessin);
+	g3x_SetInitFunction(init);
+	g3x_SetDrawFunction(dessin);
 
-  return g2x_MainStart();
+  return g3x_MainStart();
 }

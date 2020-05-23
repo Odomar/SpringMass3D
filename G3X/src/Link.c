@@ -4,10 +4,16 @@
 /*= Systeme Masses/Ressort en dimension 1 : module liaison    =*/
 /*=============================================================*/
 
-#include <g2x.h>
+#include <g3x.h>
 
 #include <PMat.h>
 #include <Link.h>
+
+static double alpha= 0.5;
+static double ambi = 0.2;
+static double diff = 0.3;
+static double spec = 0.4;
+static double shin = 0.5;
 
 /*================================================*/
 /*=      ALGORITHMES DES MODULES DE LIAISON      =*/
@@ -81,19 +87,27 @@ static void AlgoRF_CondPos(Link* L)
   L->M2->frc -= f;
 }
 
-/* quelques couleurs (cf. <g2x_Colors.h>) */
-static G2Xcolor Lcols[8]={G2Xr,G2Xo,G2Xy,G2Xg,G2Xb,G2Xc,G2Xm,G2Xk};
+/* quelques couleurs (cf. <g3x_Colors.h>) */
+static G3Xcolor Lcols[8]={G3Xr,G3Xo,G3Xy,G3Xg,G3Xb,G3Xc,G3Xm,G3Xk};
 
 static void DrawM1M2(Link* L)
 {
-  g2x_Line(L->M1->x,L->M1->pos,L->M2->x,L->M2->pos,Lcols[L->type],1);
+	g3x_Material(Lcols[L->type],ambi,diff,spec,shin,1.);
+	glBegin(GL_LINES);
+	glVertex3f(L->M1->x,L->M1->y,L->M1->pos);
+	glVertex3f(L->M2->x,L->M2->y,L->M2->pos);
+	glEnd();
 }
 
 
 static void DrawFrc(Link* L)
 {
-  PMat* M=(L->M1!=NULL?L->M1:L->M2);
-  g2x_Line(M->x,M->pos,M->x,M->pos+0.001*L->frc,Lcols[L->type],1);
+	PMat* M=(L->M1!=NULL?L->M1:L->M2);
+	g3x_Material(Lcols[L->type],ambi,diff,spec,shin,1.);
+	glBegin(GL_LINES);
+	glVertex3f(M->x,M->y,M->pos);
+	glVertex3f(M->x,M->y,M->pos+0.001*L->frc);
+	glEnd();
 }
 
 /*================================================*/

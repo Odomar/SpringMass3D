@@ -1,5 +1,5 @@
 #
-# Les variables d'environnement libG2X, incG2X
+# Les variables d'environnement libG3X, incG3X
 # sont definies dans le fichier ~/.bashrc par le script ../install.sh
 #
 #compilateur
@@ -14,11 +14,11 @@ else              #en mode normal
 endif
 
 # assemblage des infos de lib. et inc.
-lib =   $(libG2X)
+lib =   $(libG3X)
 # fichiers *.c locaux
 src = src/
 # fichiers *.h locaux et lib.
-inc = -I./include $(incG2X) 
+inc = -I./include $(incG3X)
 # fichiers générés
 bin = bin/
 

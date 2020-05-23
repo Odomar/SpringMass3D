@@ -7,7 +7,7 @@
 #ifndef  _PMAT_
   #define _PMAT_
   
-  #include <g2x.h>
+  #include <g3x.h>
 
   #define _POINTFIXE 0
   #define _PARTICULE 1
@@ -22,9 +22,10 @@
     double frc;      /* buffer de force                    */
     void (*setup)(struct _pmat*, double h); /* integrateur */
     /*-----------------------------------------------------*/
-    G2Xcolor col;   /* couleur RGBA (4 float)              */   
+    G3Xcolor col;   /* couleur RGBA (4 float)              */
     double   x;     /* 2e coord. pour positionnement 2D    */
-    void (*draw)(struct _pmat*);     /* fonction de dessin */    
+    double   y;     /* 3e coord. pour positionnement 3D    */
+    void (*draw)(struct _pmat*);     /* fonction de dessin */
   } PMat;
   
 /*! Creation d'une particule mobile !*/

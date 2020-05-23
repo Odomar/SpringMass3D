@@ -33,12 +33,15 @@ static void pointfixe(PMat* M, double h)
 
 static void drawcirc(PMat *M)
 { /* rayon indexe sur la masse */
-  g2x_Circle(M->x,M->pos,0.2*M->m,M->col,2);
+	/*g3x_Material(rouge,ambi,diff,spec,shin,1.);
+	glutSolidSphere(2,M->x,M->pos);
+	g2x_Circle(M->x,M->pos,0.2*M->m,M->col,2);*/
+
 }
 
 static void drawdot(PMat *M)
 { /* rayon indexe sur la masse */
-  g2x_FillCircle(M->x,M->pos,0.2*M->m,M->col);
+  /*g3x_FillSphere(M->x,M->pos,0.2*M->m,M->col);*/
 }
 
 
@@ -56,7 +59,7 @@ extern void MassLF(PMat* M, double pos, double x, double m)
   M->setup = &leapfrog;
   /* parametres graphiques */
   M->x    = x;
-  memcpy(M->col,G2Xb ,sizeof(G2Xcolor));
+  memcpy(M->col,G3Xb ,sizeof(G3Xcolor));
   M->draw  = &drawdot;
 }
 
@@ -72,7 +75,7 @@ extern void MassEE(PMat* M, double pos, double x, double m)
   M->setup = &eulerexp;
   /* parametres graphiques */
   M->x    = x;
-  memcpy(M->col,G2Xg ,sizeof(G2Xcolor));
+  memcpy(M->col,G3Xg ,sizeof(G3Xcolor));
   M->draw  = &drawcirc;
 }
 
@@ -88,7 +91,7 @@ extern void Fixe(PMat *M, double pos, double x)
   M->setup = &pointfixe;
   /* parametres graphiques */
   M->x    = x;
-  memcpy(M->col,G2Xr ,sizeof(G2Xcolor));
+  memcpy(M->col,G3Xr ,sizeof(G3Xcolor));
   M->draw  = &drawcirc;
 }
 
