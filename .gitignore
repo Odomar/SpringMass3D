@@ -1,7 +1,5 @@
 *.o
-G3X/SimpleOsc
-G3X/Corde1
-G3X/Corde2
+G3X/Corde
 G3X/Flag
 G3X/bin/
 OpenGL/cmake-build-debug
