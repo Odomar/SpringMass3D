@@ -155,8 +155,8 @@ bool Modeleur(void)
 	g = -5.*Fe;        /* la gravite : elle aussi a calibrer avec Fe      */
 	v = -2.*Fe;        /* le vent : lui aussi a calibrer avec Fe          */
 
-	width = 8;
-	height = 8;
+	width = 32;
+	height = 32;
 
 	if(!createMasses())
 		return false;
