@@ -15,27 +15,29 @@ static double   m,k,z,g,v; /* parametres physiques               */
 static double   tempo=0.02;/* temporisation de la simul          */
 
 /*! systeme "Masses-Ressorts" : les particules et les liaisons !*/
-static int      nbm;
-static PMat    *TabM=NULL;
-static int      nbl;
-static Link    *TabL=NULL;
+static int nbm;
+static PMat ** TabM=NULL;
+static int nbl;
+static Link * TabL=NULL;
+static int width, height;
 
 /*=================================================================*/
 /*= sic.                                                          =*/
 /*=================================================================*/
 void reset(void)
 {
-	int i;
-	for (i=0;i<nbm;i++) {
-		TabM[i].vit_x = 0.;
-		TabM[i].vit_y = 0.;
-		TabM[i].vit_z = 0.;
-		TabM[i].x = 0.;
-		TabM[i].y = -5.+i;
-		TabM[i].z = 0.;
-		TabM[i].frc_x = 0.;
-		TabM[i].frc_y = 0.;
-		TabM[i].frc_z = 0.;
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++){
+			TabM[i][j].x = i;
+			TabM[i][j].y = 0.;
+			TabM[i][j].z = j;
+			TabM[i][j].vit_x = 0.;
+			TabM[i][j].vit_y = 0.;
+			TabM[i][j].vit_z = 0.;
+			TabM[i][j].frc_x = 0.;
+			TabM[i][j].frc_y = 0.;
+			TabM[i][j].frc_z = 0.;
+		}
 	}
 }
 
@@ -43,14 +45,95 @@ void reset(void)
 /*=-------------------------=*/
 /*=  Constructon du modele  =*/
 /*=-------------------------=*/
+bool createMasses(){
+	nbm = width * height;
+	if ((TabM=(PMat**)calloc(width, sizeof(PMat*))) == NULL)
+		return false;
+
+	for (int i = 0; i < width; i++) {
+		if ((TabM[i]=(PMat*)calloc(height, sizeof(PMat))) == NULL)
+			return false;
+	}
+
+	// Add fixed points to first column
+	for (int i = 0; i < height; i++) {
+		Fixe(&TabM[0][i], 0., 0., i);
+	}
+
+	for (int i = 1; i < width; i++) {
+		for(int j = 0; j < height; j++) {
+			MassLF(&TabM[i][j], i, 0., j, m);
+		}
+	}
+
+	return true;
+}
+
+bool createLinks(){
+	// number of links :
+	// (w-1)*h horizontal direct neighbors
+	// w*(h-1) vertical direct neighbors
+	// (w-2)*h horizontal bridges
+	// w*(h-2) vertical bridges
+	// (w-1)*(h-1) first diagonal
+	// (w-1)*(h-1) second diagonal
+	// quick maths : 6 * (w*h) - 5w - 5h + 2
+	nbl = 6 * (width * height) - 5 * width - 5 * height + 2;
+
+	if ((TabL = (Link*)calloc(nbl, sizeof(Link))) == NULL)
+		return false;
+
+	// index to loop over all links
+	int idx = 0;
+
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++) {
+			// direct horizontal neighbors
+			if (i < width - 1) {
+				RessortFrein(&TabL[idx], k, z);
+				Connect(&TabM[i][j], &TabL[idx], &TabM[i + 1][j]);
+				idx++;
+			}
+			// direct vertical neighbors
+			if (j < height - 1) {
+				RessortFrein(&TabL[idx], k, z);
+				Connect(&TabM[i][j], &TabL[idx], &TabM[i][j + 1]);
+				idx++;
+			}
+
+			// horizontal bridges
+			if (i < width - 2) {
+				RessortFrein(&TabL[idx], k, z);
+				Connect(&TabM[i][j], &TabL[idx], &TabM[i + 2][j]);
+				idx++;
+			}
+			// vertical bridges
+			if (j < height - 2) {
+				RessortFrein(&TabL[idx], k, z);
+				Connect(&TabM[i][j], &TabL[idx], &TabM[i][j + 2]);
+				idx++;
+			}
+
+			// first diagonal
+			if (i < width - 1 && j < height - 1) {
+				RessortFrein(&TabL[idx], k, z);
+				Connect(&TabM[i][j], &TabL[idx], &TabM[i + 1][j + 1]);
+				idx++;
+			}
+			// second diagonal
+			if (i < width - 1 && j > 0) {
+				RessortFrein(&TabL[idx], k, z);
+				Connect(&TabM[i][j], &TabL[idx], &TabM[i + 1][j - 1]);
+				idx++;
+			}
+		}
+	}
+
+	return true;
+}
+
 bool Modeleur(void)
 {
-	/*! le Modele : un tableau de particules, un tableau de liaisons !*/
-	nbm = 11;              /* 9 particules et 2 points fixes     */
-	if (!(TabM=(PMat*)calloc(nbm,sizeof(PMat)))) return false;
-	nbl = (nbm-1)+(nbm-2)+(nbm-2); /* 10 ressorts-freins + 9 "gravites" + 9 "vents"  */
-	if (!(TabL=(Link*)calloc(nbl,sizeof(Link)))) return false;
-
 	Fe= 100;           /* parametre du simulateur Fe=1/h                  */
 	h = 1./Fe;
 	m = 1.;            /* la plupart du temps, toutes les masses sont a 1 */
@@ -60,46 +143,14 @@ bool Modeleur(void)
 	g = -5.*Fe;        /* la gravite : elle aussi a calibrer avec Fe      */
 	v = -2.*Fe;        /* le vent : lui aussi a calibrer avec Fe          */
 
+	width = 8;
+	height = 8;
 
-	/*! les particules !*/
-	int i;
-	PMat* M=TabM;
-	Fixe(M++,0.,-5.,0.);
-	for (i=1;i<nbm-1;i++) MassLF(M++,0.,-5.+i,0.,m);
-	Fixe(M++,0.,5.,0.);
+	if(!createMasses())
+		return false;
 
-	/*! les liaisons !*/
-	Link* L=TabL;
-	for (i=0;i<nbm-1;i++) RessortFrein(L++,k,z);
-	for (i=0;i<nbm-2;i++) FrcConst    (L++,0.,0.,g);
-	for (i=0;i<nbm-2;i++) FrcConst    (L++,v,0.,0.);
-
-	/*! les connections => topologie fixe !*/
-	L=TabL;
-	/* les ressorts inter-particules */
-	M=TabM;
-	while (L<TabL+nbm-1)
-	{
-		Connect(M,L,M+1);
-		M++;
-		L++;
-	}
-	/* les "gravites" individuelles  */
-	M=TabM+1; /* 1e particule mobile */
-	while (L<TabL+nbm-1+nbm-2)
-	{
-		Connect(M,L,NULL);
-		M++;
-		L++;
-	}
-	/* le vent  */
-	M=TabM+1; /* 1e particule mobile */
-	while (L<TabL+nbl)
-	{
-		Connect(M,L,NULL);
-		M++;
-		L++;
-	}
+	if(!createLinks())
+		return false;
 
 	reset();
 	return true;
@@ -130,7 +181,14 @@ void dessin(void)
 	/* frequence d'affichage reglable */
 	g3x_SetRefreshFreq(Fa);
 	Link *L=TabL;
-	while (L<TabL+nbl)  { L->draw(L); L->k=k; L->v=z; ++L; } /* mise a jour des parametres => scrollbar */
+	while (L<TabL+nbl)  {
+		/* mise a jour des parametres => scrollbar */
+//		fprintf(stderr, "success test\n");
+		L->draw(L);
+		L->k=k;
+		L->v=z;
+		++L;
+	}
 }
 
 
@@ -139,10 +197,16 @@ void dessin(void)
 /*=------------------------------=*/
 void Moteur_Physique(void)
 {
-	PMat *M=TabM;
-	while (M<TabM+nbm) { M->setup(M,h); ++M; }
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++){
+			TabM[i][j].setup(&TabM[i][j], h);
+		}
+	}
 	Link *L=TabL;
-	while (L<TabL+nbl) { L->setup(L)  ; ++L; }
+	while (L<TabL+nbl) {
+		L->setup(L);
+		++L;
+	}
 	g3x_tempo(tempo); /* temporisation, si ca va trop vite */
 }
 
@@ -153,7 +217,12 @@ void Moteur_Physique(void)
 /*=-------------------------=*/
 void quit(void)
 {
-	if (TabM!=NULL) free(TabM);
+	if (TabM!=NULL){
+		for (int i = 0; i < width; i++){
+			free(TabM[i]);
+		}
+		free(TabM);
+	}
 	if (TabL!=NULL) free(TabL);
 }
 
