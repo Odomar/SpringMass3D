@@ -77,8 +77,10 @@ bool createLinks(){
 	// w*(h-2) vertical bridges
 	// (w-1)*(h-1) first diagonal
 	// (w-1)*(h-1) second diagonal
-	// quick maths : 6 * (w*h) - 5w - 5h + 2
-	nbl = 6 * (width * height) - 5 * width - 5 * height + 2;
+	// w*h gravity
+	// w*h wind
+	// quick maths : 8 * (w*h) - 5w - 5h + 2
+	nbl = 8 * (width * height) - 5 * width - 5 * height + 2;
 
 	if ((TabL = (Link*)calloc(nbl, sizeof(Link))) == NULL)
 		return false;
@@ -126,6 +128,16 @@ bool createLinks(){
 				Connect(&TabM[i][j], &TabL[idx], &TabM[i + 1][j - 1]);
 				idx++;
 			}
+
+			// Gravity
+			FrcConst(&TabL[idx], 0, 0, g);
+			Connect(&TabM[i][j], &TabL[idx], NULL);
+			idx++;
+
+			// Wind
+			FrcConst(&TabL[idx], 0, v, 0);
+			Connect(&TabM[i][j], &TabL[idx], NULL);
+			idx++;
 		}
 	}
 
@@ -138,7 +150,7 @@ bool Modeleur(void)
 	h = 1./Fe;
 	m = 1.;            /* la plupart du temps, toutes les masses sont a 1 */
 	/* avec les parametres ci-dessous : limite de stabilite               */
-	k = 0.866*SQR(Fe); /* raideurs   -> a multiplier par mb*Fe^2          */
+	k = 0.0866*SQR(Fe); /* raideurs   -> a multiplier par mb*Fe^2          */
 	z = 0.08*Fe;       /* viscosires -> a multiplier par mb*Fe            */
 	g = -5.*Fe;        /* la gravite : elle aussi a calibrer avec Fe      */
 	v = -2.*Fe;        /* le vent : lui aussi a calibrer avec Fe          */
